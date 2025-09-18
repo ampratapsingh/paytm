@@ -1,6 +1,6 @@
 const express = require("express");
 const zod = require("zod");
-const { User } = require("../db");
+const { User, Account } = require("../db");
 const router = express.Router();
 const jwt = require("jsonwebtokken");
 const JWT_SECRET = require("../config")
@@ -46,6 +46,13 @@ router.post("/signup", async(req, res) =>{
   }
 
   const dbUser = await User.create(body);
+
+  //New accoount
+  await Account.create({
+    userId,
+    balance: 1+Math.random()*1000
+  })
+
   const token = jwt.sign({
     userId
   },JWT_SECRET)
@@ -103,7 +110,7 @@ router.put("/", authMiddleware, async(req,res) => {
 })
 
 router.get("/bulk", async(req, res) => {
-  const filter = req.query.filter || "";
+  const filter = req.query.filter || "";     //e.g GET /products?filter=books&sort=asc
 
   const users = await User.find({
     $or: [{
